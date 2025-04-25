@@ -1,0 +1,10 @@
+flask
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-flask
+opentelemetry-instrumentation-requests
+opentelemetry-instrumentation-logging
+opentelemetry-exporter-otlp-proto-grpc
+requests
+importlib_metadata>=6.0,<7.0
+zipp
