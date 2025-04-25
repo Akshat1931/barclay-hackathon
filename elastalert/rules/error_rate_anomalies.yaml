@@ -1,0 +1,29 @@
+name: error_rate_anomalies
+type: any
+index: api-anomalies
+filter:
+- term:
+    type: "error_rate"
+- range:
+    error_rate:
+      from: 0.05  # 5% error rate
+
+alert:
+- "email"
+- "command"
+
+email:
+- "admin@yourdomain.com"
+
+command: ["/bin/sh", "-c", "echo 'Error rate anomaly detected for {{ service }}/{{ endpoint }} with error_rate {{ error_rate }}' | tee -a /opt/elastalert/logs/alerts.log"]
+
+alert_subject: "API Error Rate Anomaly: {{ service }}/{{ endpoint }}"
+alert_text: |
+  Anomaly detected in error rate for API:
+  Service: {{ service }}
+  Endpoint: {{ endpoint }}
+  Error Rate: {{ error_rate }}
+  Severity: {{ severity }}
+  Timestamp: {{ timestamp }}
+
+alert_text_type: alert_text_only

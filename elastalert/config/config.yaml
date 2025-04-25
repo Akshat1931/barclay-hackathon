@@ -1,0 +1,24 @@
+# Elastalert main configuration file
+es_host: elasticsearch
+es_port: 9200
+buffer_time:
+  minutes: 15
+run_every:
+  minutes: 1
+writeback_index: elastalert_status
+alert_time_limit:
+  days: 1
+
+# Add your SMTP settings for email alerts
+# email:
+#   smtp_host: smtp.gmail.com
+#   smtp_port: 587
+#   smtp_ssl: false
+#   smtp_auth: true
+#   smtp_starttls: true
+#   smtp_from_addr: your-email@gmail.com
+#   smtp_username: your-email@gmail.com
+#   smtp_password: your-password
+
+# Webhook configuration (for Slack, Discord, etc.)
+# http_post_url: https://hooks.slack.com/services/YOUR_WEBHOOK_URL

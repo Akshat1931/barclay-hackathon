@@ -1,0 +1,114 @@
+version: '3.7'
+
+services:
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elk
+
+  # Logstash
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logstash/templates:/etc/logstash/templates:ro
+    ports:
+      - 5044:5044
+      - 9600:9600
+      - 8080:8080
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  # Filebeat for log collection
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.0
+    container_name: filebeat
+    user: root
+    volumes:
+      - ./filebeat/config/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+      - logstash
+
+  # Elastalert for alerting (free and open-source)
+  elastalert:
+    image: jertel/elastalert2:2.6.0
+    container_name: elastalert
+    volumes:
+      - ./elastalert/config/config.yaml:/opt/elastalert/config.yaml
+      - ./elastalert/rules:/opt/elastalert/rules
+      - ./elastalert/logs:/opt/elastalert/logs
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+  # Jaeger for distributed tracing (free alternative to AWS X-Ray)
+  jaeger:
+    image: jaegertracing/all-in-one:1.35
+    container_name: jaeger
+    ports:
+      - 16686:16686  # Web UI
+      - 6831:6831/udp  # Jaeger thrift compact
+      - 14268:14268  # Jaeger HTTP collector
+    networks:
+      - elk
+
+  # Python Anomaly Detection Service
+  anomaly-detection:
+    build:
+      context: ./anomaly-detection
+      dockerfile: Dockerfile
+    container_name: anomaly-detection
+    volumes:
+      - ./anomaly-detection:/app
+    networks:
+      - elk
+    depends_on:
+      - elasticsearch
+
+volumes:
+  elasticsearch-data:
+
+networks:
+  elk:
+    driver: bridge

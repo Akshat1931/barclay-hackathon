@@ -1,0 +1,37 @@
+name: cross_environment_correlation
+type: frequency
+index: api-logs-*
+num_events: 5
+timeframe:
+  minutes: 2
+  
+filter:
+- range:
+    status_code:
+      from: 500
+      to: 599
+
+query_key:
+  - "request_id"
+  - "environment_type"
+
+use_count_query: true
+doc_type: _doc
+
+alert:
+- "email"
+- "command"
+
+email:
+- "admin@yourdomain.com"
+
+command: ["/bin/sh", "-c", "echo 'Cross-environment error correlation detected for request_id {{ request_id }}' | tee -a /opt/elastalert/logs/alerts.log"]
+
+alert_subject: "Cross-Environment Error Correlation Detected"
+alert_text: |
+  Multiple errors detected across different environments with the same request ID.
+  Request ID: {{ request_id }}
+  Environments affected: {{ environment_type }}
+  This suggests a cascading failure across your distributed system.
+
+alert_text_type: alert_text_only

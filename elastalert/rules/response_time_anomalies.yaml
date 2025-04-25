@@ -1,0 +1,31 @@
+name: response_time_anomalies
+type: any
+index: api-anomalies
+filter:
+- term:
+    type: "response_time"
+- range:
+    severity:
+      from: "medium"
+      to: "high"
+
+alert:
+- "email"
+- "command"
+
+email:
+- "admin@yourdomain.com"
+
+command: ["/bin/sh", "-c", "echo 'Response time anomaly detected for {{ service }}/{{ endpoint }} with avg_response_time {{ avg_response_time }}ms' | tee -a /opt/elastalert/logs/alerts.log"]
+
+alert_subject: "API Response Time Anomaly: {{ service }}/{{ endpoint }}"
+alert_text: |
+  Anomaly detected in response time for API:
+  Service: {{ service }}
+  Endpoint: {{ endpoint }}
+  Average Response Time: {{ avg_response_time }}ms
+  P95 Response Time: {{ p95_response_time }}ms
+  Severity: {{ severity }}
+  Timestamp: {{ timestamp }}
+
+alert_text_type: alert_text_only

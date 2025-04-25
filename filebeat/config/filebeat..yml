@@ -1,0 +1,57 @@
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/api-services/*.log
+  json.keys_under_root: true
+  json.add_error_key: true
+  json.message_key: log
+  fields:
+    source_type: on_prem
+  fields_under_root: true
+  tags: ["on_prem"]
+
+- type: container
+  enabled: true
+  paths:
+    - /var/lib/docker/containers/*/*.log
+  json.keys_under_root: true
+  json.add_error_key: true
+  json.message_key: log
+  fields:
+    source_type: container
+  fields_under_root: true
+  tags: ["container"]
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+  # Extract request_id from logs if exists
+  - dissect:
+      tokenizer: "%{message}"
+      field: "message"
+      target_prefix: ""
+      when:
+        has_fields: ["message"]
+
+  # Handle multiple data formats
+  - decode_json_fields:
+      fields: ["message"]
+      target: ""
+      when:
+        contains:
+          message: "{"
+
+output.logstash:
+  hosts: ["logstash:5044"]
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
