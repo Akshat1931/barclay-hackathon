@@ -3,9 +3,7 @@ filebeat.inputs:
   enabled: true
   paths:
     - /var/log/api-services/*.log
-  json.keys_under_root: true
-  json.add_error_key: true
-  json.message_key: log
+
   fields:
     source_type: on_prem
   fields_under_root: true
@@ -37,13 +35,16 @@ processors:
       when:
         has_fields: ["message"]
 
-  # Handle multiple data formats
+  # More selective JSON parsing
   - decode_json_fields:
       fields: ["message"]
       target: ""
       when:
-        contains:
-          message: "{"
+        and:
+          - contains:
+              message: "{"
+          - contains:
+              message: "}"
 
 output.logstash:
   hosts: ["logstash:5044"]
