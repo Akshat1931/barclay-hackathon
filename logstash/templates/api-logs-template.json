@@ -1,0 +1,64 @@
+{
+    "index_patterns": ["api-logs-*"],
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.refresh_interval": "5s"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "service": {
+          "type": "keyword"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "message": {
+          "type": "text"
+        },
+        "logger": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "environment_type": {
+          "type": "keyword"
+        },
+        "host": {
+          "type": "keyword"
+        },
+        "request_id": {
+          "type": "keyword"
+        },
+        "http_method": {
+          "type": "keyword"
+        },
+        "endpoint": {
+          "type": "keyword"
+        },
+        "status_code": {
+          "type": "integer"
+        },
+        "status_category": {
+          "type": "keyword"
+        },
+        "response_time": {
+          "type": "float"
+        },
+        "source_ip": {
+          "type": "ip"
+        },
+        "geo": {
+          "properties": {
+            "country_name": { "type": "keyword" },
+            "city_name": { "type": "keyword" },
+            "location": { "type": "geo_point" }
+          }
+        }
+      }
+    }
+  }
